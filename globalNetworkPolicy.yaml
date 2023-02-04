@@ -1,0 +1,18 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: default-deny
+spec: 
+#exclude kubernetes and calico control plane pods
+  namespaceSelector: has(projectcalico.org/name) && projectcalico.org/name not in {"kube-system","prometheus","alert-manager"}  
+  types:
+    - Ingress
+    - Egress
+# add any allow rules, want to apply to all pods such as pods to connect to kube-dns
+  egress:  
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == "kube-dns"
+        ports: 
+          - 53

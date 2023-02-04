@@ -1,0 +1,28 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: ingress-eventlistener
+  namespace: default
+spec:
+  policyTypes:
+  - Ingress
+  podSelector: 
+    matchLabels:
+      eventlistener: listener
+  ingress:
+  - from:
+      - namespaceSelector: 
+          matchLabels:
+            namespace: tekton-pipelines
+  - from:
+      - namespaceSelector: 
+          matchLabels:
+            namespace: tekton-pipelines-resolvers
+  - from:
+      - ipBlock:
+          cidr: 0.0.0.0/24
+    ports:
+      - protocol: TCP
+        port: 8080
+      - protocol: TCP
+        port: 443

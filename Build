@@ -1,0 +1,39 @@
+#!/bin/bash
+export REGISTRY_SERVER=https://index.docker.io/v1/
+export REGISTRY_USER=7777ksh
+export REGISTRY_PASS=
+export REGISTRY_EMAIL=
+
+
+kubectl create secret docker-registry registry-creds \
+       	--docker-server=$REGISTRY_SERVER \
+	--docker-username=$REGISTRY_USER \
+	--docker-password=$REGISTRY_PASS \
+	--docker-email=$REGISTRY_EMAIL
+
+
+cat <<EOF | kubectl create -f -
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    args: ["--dockerfile=/workspace/Dockerfile",
+           "--context=dir://workspace",
+           "destination=7777ksh/image:test"]
+    volumeMounts:
+      - name: kaniko-secret
+        mountPath: /kaniko/.docker
+  restartPolicy: Never
+  volumes:
+    - name: kaniko-secret
+      secret: 
+        secretName: registry-creds
+        items: 
+          - key: .dockerconfigjson
+            path: config.json
+EOF

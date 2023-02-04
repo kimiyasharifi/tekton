@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-deployment
+spec:
+  selector:
+    matchLabels:
+      app: trigger-demo
+  template:
+    metadata:
+      labels:
+        app: trigger-demo
+    spec:
+      containers:
+      - name: tekton-pod
+        image: docker.io/7777ksh/tekton-lab-app
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tekton-svc
+spec:
+  selector:
+    app: trigger-demo
+  ports:
+  - port: 3000
+    protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tekton-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: tekton-svc
+            port: 
+              number: 3000
+
